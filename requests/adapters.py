@@ -450,7 +450,6 @@ class HTTPAdapter(BaseAdapter):
                 chunked=chunked
             )
 
-
         except (ProtocolError, socket.error) as err:
             raise ConnectionError(err, request=request)
 
