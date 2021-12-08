@@ -4,6 +4,90 @@ Release History
 dev
 ---
 
+- \[Short description of non-trivial change.\]
+
+- Added a `requests.exceptions.JSONDecodeError` to decrease inconsistencies
+  in the library. This gets raised in the `response.json()` method, and is
+  backwards compatible as it inherits from previously thrown exceptions.
+  Can be caught from `requests.exceptions.RequestException` as well.
+
+- Catch `AttributeError` when calculating length of files obtained by
+  `Tarfile.extractfile()`
+
+2.26.0 (2021-07-13)
+-------------------
+
+**Improvements**
+
+- Requests now supports Brotli compression, if either the `brotli` or
+  `brotlicffi` package is installed. (#5783)
+
+- `Session.send` now correctly resolves proxy configurations from both
+  the Session and Request. Behavior now matches `Session.request`. (#5681)
+
+**Bugfixes**
+
+- Fixed a race condition in zip extraction when using Requests in parallel
+  from zip archive. (#5707)
+
+**Dependencies**
+
+- Instead of `chardet`, use the MIT-licensed `charset_normalizer` for Python3
+  to remove license ambiguity for projects bundling requests. If `chardet`
+  is already installed on your machine it will be used instead of `charset_normalizer`
+  to keep backwards compatibility. (#5797)
+
+  You can also install `chardet` while installing requests by
+  specifying `[use_chardet_on_py3]` extra as follows:
+
+    ```shell
+    pip install "requests[use_chardet_on_py3]"
+    ```
+
+  Python2 still depends upon the `chardet` module.
+
+- Requests now supports `idna` 3.x on Python 3. `idna` 2.x will continue to
+  be used on Python 2 installations. (#5711)
+
+**Deprecations**
+
+- The `requests[security]` extra has been converted to a no-op install.
+  PyOpenSSL is no longer the recommended secure option for Requests. (#5867)
+
+- Requests has officially dropped support for Python 3.5. (#5867)
+
+2.25.1 (2020-12-16)
+-------------------
+
+**Bugfixes**
+
+- Requests now treats `application/json` as `utf8` by default. Resolving
+  inconsistencies between `r.text` and `r.json` output. (#5673)
+
+**Dependencies**
+
+- Requests now supports chardet v4.x.
+
+2.25.0 (2020-11-11)
+-------------------
+
+**Improvements**
+
+- Added support for NETRC environment variable. (#5643)
+
+**Dependencies**
+
+- Requests now supports urllib3 v1.26.
+
+**Deprecations**
+
+- Requests v2.25.x will be the last release series with support for Python 3.5.
+- The `requests[security]` extra is officially deprecated and will be removed
+  in Requests v2.26.0.
+
+2.24.0 (2020-06-17)
+-------------------
+
 **Improvements**
 
 - pyOpenSSL TLS implementation is now only used if Python
@@ -12,6 +96,11 @@ dev
   This applies even if pyOpenSSL is installed via the
   `requests[security]` extra (#5443)
 
+- Redirect resolution should now only occur when
+  `allow_redirects` is True. (#5492)
+
+- No longer perform unnecessary Content-Length calculation for
+  requests that won't use it. (#5496)
 
 2.23.0 (2020-02-19)
 -------------------
@@ -27,7 +116,7 @@ dev
 **Dependencies**
 
 - Pinning for `chardet` and `idna` now uses major version instead of minor.
-  This hopefully reduces the need for releases everytime a dependency is updated.
+  This hopefully reduces the need for releases every time a dependency is updated.
 
 2.22.0 (2019-05-15)
 -------------------
@@ -382,7 +471,7 @@ Or, even better:
 
 -   Fixed regression from 2.12.2 where non-string types were rejected in
     the basic auth parameters. While support for this behaviour has been
-    readded, the behaviour is deprecated and will be removed in the
+    re-added, the behaviour is deprecated and will be removed in the
     future.
 
 2.12.3 (2016-12-01)
@@ -1616,12 +1705,12 @@ This is not a backwards compatible change.
 -   Automatic Authentication API Change
 -   Smarter Query URL Parameterization
 -   Allow file uploads and POST data together
--   
+-
 
     New Authentication Manager System
 
     :   -   Simpler Basic HTTP System
-        -   Supports all build-in urllib2 Auths
+        -   Supports all built-in urllib2 Auths
         -   Allows for custom Auth Handlers
 
 0.2.4 (2011-02-19)
@@ -1635,7 +1724,7 @@ This is not a backwards compatible change.
 0.2.3 (2011-02-15)
 ------------------
 
--   
+-
 
     New HTTPHandling Methods
 
@@ -1668,4 +1757,3 @@ This is not a backwards compatible change.
 
 -   Frustration
 -   Conception
-

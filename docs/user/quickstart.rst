@@ -3,8 +3,6 @@
 Quickstart
 ==========
 
-.. image:: https://farm5.staticflickr.com/4259/35163667010_8bfcaef274_k_d.jpg
-
 .. module:: requests.models
 
 Eager to get started? This page gives a good introduction in how to get started
@@ -39,12 +37,12 @@ get all the information we need from this object.
 Requests' simple API means that all forms of HTTP request are as obvious. For
 example, this is how you make an HTTP POST request::
 
-    >>> r = requests.post('https://httpbin.org/post', data = {'key':'value'})
+    >>> r = requests.post('https://httpbin.org/post', data={'key': 'value'})
 
 Nice, right? What about the other HTTP request types: PUT, DELETE, HEAD and
 OPTIONS? These are all just as simple::
 
-    >>> r = requests.put('https://httpbin.org/put', data = {'key':'value'})
+    >>> r = requests.put('https://httpbin.org/put', data={'key': 'value'})
     >>> r = requests.delete('https://httpbin.org/delete')
     >>> r = requests.head('https://httpbin.org/get')
     >>> r = requests.options('https://httpbin.org/get')
@@ -130,6 +128,9 @@ You can also access the response body as bytes, for non-text requests::
 
 The ``gzip`` and ``deflate`` transfer-encodings are automatically decoded for you.
 
+The ``br``  transfer-encoding is automatically decoded for you if a Brotli library
+like `brotli <https://pypi.org/project/brotli>`_ or `brotlicffi <https://pypi.org/project/brotli>`_ is installed.
+
 For example, to create an image from binary data returned by a request, you can
 use the following code::
 
@@ -152,7 +153,9 @@ There's also a builtin JSON decoder, in case you're dealing with JSON data::
 
 In case the JSON decoding fails, ``r.json()`` raises an exception. For example, if
 the response gets a 204 (No Content), or if the response contains invalid JSON,
-attempting ``r.json()`` raises ``ValueError: No JSON object could be decoded``.
+attempting ``r.json()`` raises ``requests.exceptions.JSONDecodeError``. This wrapper exception
+provides interoperability for multiple exceptions that may be thrown by different
+python versions and json serialization libraries.
 
 It should be noted that the success of the call to ``r.json()`` does **not**
 indicate the success of the response. Some servers may return a JSON object in a
@@ -215,7 +218,8 @@ Note: Custom headers are given less precedence than more specific sources of inf
 
 * Authorization headers set with `headers=` will be overridden if credentials
   are specified in ``.netrc``, which in turn will be overridden by the  ``auth=``
-  parameter.
+  parameter. Requests will search for the netrc file at `~/.netrc`, `~/_netrc`,
+  or at the path specified by the `NETRC` environment variable.
 * Authorization headers will be removed if you get redirected off-host.
 * Proxy-Authorization headers will be overridden by proxy credentials provided in the URL.
 * Content-Length headers will be overridden when we can determine the length of the content.

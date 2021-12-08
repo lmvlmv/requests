@@ -3,8 +3,6 @@
 Contributor's Guide
 ===================
 
-.. image:: https://farm5.staticflickr.com/4237/35550408335_7671fde302_k_d.jpg
-
 If you're reading this, you're probably interested in contributing to Requests.
 Thank you very much! Open source projects live-and-die based on the support
 they receive from others, and the fact that you're even considering
@@ -13,22 +11,16 @@ contributing to the Requests project is *very* generous of you.
 This document lays out guidelines and advice for contributing to this project.
 If you're thinking of contributing, please start by reading this document and
 getting a feel for how contributing to this project works. If you have any
-questions, feel free to reach out to either `Ian Cordasco`_, `Cory Benfield`_,
-or `Nate Prewitt`_, the primary maintainers.
+questions, feel free to reach out to either `Nate Prewitt`_, `Ian Cordasco`_,
+or `Seth Michael Larson`_, the primary maintainers.
 
 .. _Ian Cordasco: http://www.coglib.com/~icordasc/
-.. _Cory Benfield: https://lukasa.co.uk/about
 .. _Nate Prewitt: https://www.nateprewitt.com/
-
-If you have non-technical feedback, philosophical ponderings, crazy ideas, or
-other general thoughts about Requests or its position within the Python
-ecosystem, the BDFL, `Kenneth Reitz`_, would love to hear from you.
+.. _Seth Michael Larson: https://sethmlarson.dev/
 
 The guide is split into sections based on the type of contribution you're
 thinking of making, with a section that covers general guidelines for all
 contributors.
-
-.. _Kenneth Reitz: mailto:me@kennethreitz.org
 
 Be Cordial
 ----------
@@ -42,7 +34,7 @@ including reporting bugs or requesting features. This golden rule is
 **All contributions are welcome**, as long as
 everyone involved is treated with respect.
 
-.. _be cordial or be on your way: https://www.kennethreitz.org/essays/be-cordial-or-be-on-your-way
+.. _be cordial or be on your way: https://kenreitz.org/essays/2013/01/27/be-cordial-or-be-on-your-way
 
 .. _early-feedback:
 
@@ -86,7 +78,7 @@ When contributing code, you'll want to follow this checklist:
 4. Make your change.
 5. Run the entire test suite again, confirming that all tests pass *including
    the ones you just added*.
-6. Send a GitHub Pull Request to the main repository's ``master`` branch.
+6. Send a GitHub Pull Request to the main repository's ``main`` branch.
    GitHub Pull Requests are the expected method of code collaboration on this
    project.
 

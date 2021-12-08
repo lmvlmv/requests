@@ -3,8 +3,6 @@
 Advanced Usage
 ==============
 
-.. image:: https://farm5.staticflickr.com/4263/35163665790_d182d84f5e_k_d.jpg
-
 This document covers some of Requests more advanced features.
 
 .. _session-objects:
@@ -235,14 +233,21 @@ or persistent::
     s.verify = '/path/to/certfile'
 
 .. note:: If ``verify`` is set to a path to a directory, the directory must have been processed using
-  the c_rehash utility supplied with OpenSSL.
+  the ``c_rehash`` utility supplied with OpenSSL.
 
 This list of trusted CAs can also be specified through the ``REQUESTS_CA_BUNDLE`` environment variable.
+If ``REQUESTS_CA_BUNDLE`` is not set, ``CURL_CA_BUNDLE`` will be used as fallback.
 
 Requests can also ignore verifying the SSL certificate if you set ``verify`` to False::
 
     >>> requests.get('https://kennethreitz.org', verify=False)
     <Response [200]>
+
+Note that when ``verify`` is set to ``False``, requests will accept any TLS
+certificate presented by the server, and will ignore hostname mismatches
+and/or expired certificates, which will make your application vulnerable to
+man-in-the-middle (MitM) attacks. Setting verify to ``False`` may be useful
+during local development or testing.
 
 By default, ``verify`` is set to True. Option ``verify`` only applies to host certs.
 
@@ -300,7 +305,7 @@ immediately. You can override this behaviour and defer downloading the response
 body until you access the :attr:`Response.content <requests.Response.content>`
 attribute with the ``stream`` parameter::
 
-    tarball_url = 'https://github.com/psf/requests/tarball/master'
+    tarball_url = 'https://github.com/psf/requests/tarball/main'
     r = requests.get(tarball_url, stream=True)
 
 At this point only the response headers have been downloaded and the connection
@@ -441,7 +446,7 @@ argument.
     def print_url(r, *args, **kwargs):
         print(r.url)
 
-If an error occurs while executing your callback, a warning is given.
+Your callback function must handle its own exceptions. Any unhandled exception won't be passed silently and thus should be handled by the code calling Requests.
 
 If the callback function returns a value, it is assumed that it is to
 replace the data that was passed in. If the function doesn't return
@@ -482,7 +487,7 @@ they are added.
 Custom Authentication
 ---------------------
 
-Requests allows you to use specify your own authentication mechanism.
+Requests allows you to specify your own authentication mechanism.
 
 Any callable which is passed as the ``auth`` argument to a request method will
 have the opportunity to modify the request before it is dispatched.
@@ -584,10 +589,26 @@ If you need to use a proxy, you can configure individual requests with the
 
     requests.get('http://example.org', proxies=proxies)
 
-You can also configure proxies by setting the environment variables
-``HTTP_PROXY`` and ``HTTPS_PROXY``.
+Alternatively you can configure it once for an entire
+:class:`Session <requests.Session>`::
 
-::
+    import requests
+
+    proxies = {
+      'http': 'http://10.10.1.10:3128',
+      'https': 'http://10.10.1.10:1080',
+    }
+    session = requests.Session()
+    session.proxies.update(proxies)
+
+    session.get('http://example.org')
+
+When the proxies configuration is not overridden in python as shown above,
+by default Requests relies on the proxy configuration defined by standard
+environment variables ``http_proxy``, ``https_proxy``, ``no_proxy`` and
+``curl_ca_bundle``. Uppercase variants of these variables are also supported.
+You can therefore set them to configure Requests (only set the ones relevant
+to your needs)::
 
     $ export HTTP_PROXY="http://10.10.1.10:3128"
     $ export HTTPS_PROXY="http://10.10.1.10:1080"
@@ -596,9 +617,17 @@ You can also configure proxies by setting the environment variables
     >>> import requests
     >>> requests.get('http://example.org')
 
-To use HTTP Basic Auth with your proxy, use the `http://user:password@host/` syntax::
+To use HTTP Basic Auth with your proxy, use the `http://user:password@host/`
+syntax in any of the above configuration entries::
 
-    proxies = {'http': 'http://user:pass@10.10.1.10:3128/'}
+    $ export HTTPS_PROXY="http://user:pass@10.10.1.10:1080"
+
+    $ python
+    >>> proxies = {'http': 'http://user:pass@10.10.1.10:3128/'}
+
+.. warning:: Storing sensitive username and password information in an
+   environment variable or a version-controlled file is a security risk and is
+   highly discouraged.
 
 To give a proxy for a specific scheme and host, use the
 `scheme://hostname` form for the key.  This will match for
@@ -609,6 +638,23 @@ any request to the given scheme and exact hostname.
     proxies = {'http://10.20.1.128': 'http://10.10.1.10:5323'}
 
 Note that proxy URLs must include the scheme.
+
+Finally, note that using a proxy for https connections typically requires your
+local machine to trust the proxy's root certificate. By default the list of
+certificates trusted by Requests can be found with::
+
+    from requests.utils import DEFAULT_CA_BUNDLE_PATH
+    print(DEFAULT_CA_BUNDLE_PATH)
+
+You override this default certificate bundle by setting the standard
+``curl_ca_bundle`` environment variable to another file path::
+
+    $ export curl_ca_bundle="/usr/local/myproxy_info/cacert.pem"
+    $ export https_proxy="http://10.10.1.10:1080"
+
+    $ python
+    >>> import requests
+    >>> requests.get('https://example.org')
 
 SOCKS
 ^^^^^
@@ -623,7 +669,7 @@ You can get the dependencies for this feature from ``pip``:
 
 .. code-block:: bash
 
-    $ pip install requests[socks]
+    $ python -m pip install requests[socks]
 
 Once you've installed those dependencies, using a SOCKS proxy is just as easy
 as using a HTTP one::
@@ -651,10 +697,22 @@ Encodings
 When you receive a response, Requests makes a guess at the encoding to
 use for decoding the response when you access the :attr:`Response.text
 <requests.Response.text>` attribute. Requests will first check for an
-encoding in the HTTP header, and if none is present, will use `chardet
-<https://pypi.org/project/chardet/>`_ to attempt to guess the encoding.
+encoding in the HTTP header, and if none is present, will use
+`charset_normalizer <https://pypi.org/project/charset_normalizer/>`_
+or `chardet <https://github.com/chardet/chardet>`_ to attempt to
+guess the encoding.
 
-The only time Requests will not do this is if no explicit charset
+If ``chardet`` is installed, ``requests`` uses it, however for python3
+``chardet`` is no longer a mandatory dependency. The ``chardet``
+library is an LGPL-licenced dependency and some users of requests
+cannot depend on mandatory LGPL-licensed dependencies.
+
+When you install ``request`` without specifying ``[use_chardet_on_py3]]`` extra,
+and ``chardet`` is not already installed, ``requests`` uses ``charset-normalizer``
+(MIT-licensed) to guess the encoding. For Python 2, ``requests`` uses only
+``chardet`` and is a mandatory dependency there.
+
+The only time Requests will not guess the encoding is if no explicit charset
 is present in the HTTP headers **and** the ``Content-Type``
 header contains ``text``. In this situation, `RFC 2616
 <https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7.1>`_ specifies
@@ -959,8 +1017,8 @@ library to use SSLv3::
                 num_pools=connections, maxsize=maxsize,
                 block=block, ssl_version=ssl.PROTOCOL_SSLv3)
 
-.. _`described here`: https://www.kennethreitz.org/essays/the-future-of-python-http
-.. _`urllib3`: https://github.com/shazow/urllib3
+.. _`described here`: https://kenreitz.org/essays/2012/06/14/the-future-of-python-http
+.. _`urllib3`: https://github.com/urllib3/urllib3
 
 .. _blocking-or-nonblocking:
 
@@ -976,12 +1034,12 @@ response at a time. However, these calls will still block.
 
 If you are concerned about the use of blocking IO, there are lots of projects
 out there that combine Requests with one of Python's asynchronicity frameworks.
-Some excellent examples are `requests-threads`_, `grequests`_, `requests-futures`_, and `requests-async`_.
+Some excellent examples are `requests-threads`_, `grequests`_, `requests-futures`_, and `httpx`_.
 
 .. _`requests-threads`: https://github.com/requests/requests-threads
-.. _`grequests`: https://github.com/kennethreitz/grequests
+.. _`grequests`: https://github.com/spyoungtech/grequests
 .. _`requests-futures`: https://github.com/ross/requests-futures
-.. _`requests-async`: https://github.com/encode/requests-async
+.. _`httpx`: https://github.com/encode/httpx
 
 Header Ordering
 ---------------

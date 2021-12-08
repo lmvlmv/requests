@@ -8,7 +8,7 @@ Keepers of the Crystals
 
 Previous Keepers of Crystals
 ````````````````````````````
-- Kenneth Reitz <me@kennethreitz.org> `@kennethreitz <https://github.com/kennethreitz>`_, reluctant Keeper of the Master Crystal.
+- Kenneth Reitz <me@kennethreitz.org> `@ken-reitz <https://github.com/ken-reitz>`_, reluctant Keeper of the Master Crystal.
 - Cory Benfield <cory@lukasa.co.uk> `@lukasa <https://github.com/lukasa>`_
 - Ian Cordasco <graffatcolmingov@gmail.com> `@sigmavirus24 <https://github.com/sigmavirus24>`_.
 
@@ -190,3 +190,5 @@ Patches and Suggestions
 - Antti Kaihola (`@akaihola <https://github.com/akaihola>`_)
 - "Dull Bananas" <dull.bananas0@gmail.com> (`@dullbananas <https://github.com/dullbananas>`_)
 - Alessio Izzo (`@aless10 <https://github.com/aless10>`_)
+- Sylvain Marié (`@smarie <https://github.com/smarie>`_)
+- Hod Bin Noon (`@hodbn <https://github.com/hodbn>`_)

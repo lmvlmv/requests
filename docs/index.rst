@@ -9,17 +9,21 @@ Requests: HTTP for Humans™
 Release v\ |version|. (:ref:`Installation <install>`)
 
 
-.. image:: https://pepy.tech/badge/requests
+.. image:: https://pepy.tech/badge/requests/month
     :target: https://pepy.tech/project/requests
+    :alt: Requests Downloads Per Month Badge
     
 .. image:: https://img.shields.io/pypi/l/requests.svg
     :target: https://pypi.org/project/requests/
+    :alt: License Badge
 
 .. image:: https://img.shields.io/pypi/wheel/requests.svg
     :target: https://pypi.org/project/requests/
+    :alt: Wheel Support Badge
 
 .. image:: https://img.shields.io/pypi/pyversions/requests.svg
     :target: https://pypi.org/project/requests/
+    :alt: Python Version Support Badge
 
 **Requests** is an elegant and simple HTTP library for Python, built for human beings.
 
@@ -45,7 +49,7 @@ See `similar code, sans Requests <https://gist.github.com/973705>`_.
 **Requests** allows you to send HTTP/1.1 requests extremely easily. 
 There's no need to manually add query strings to your
 URLs, or to form-encode your POST data. Keep-alive and HTTP connection pooling
-are 100% automatic, thanks to `urllib3 <https://github.com/shazow/urllib3>`_.
+are 100% automatic, thanks to `urllib3 <https://github.com/urllib3/urllib3>`_.
 
 Beloved Features
 ----------------
@@ -68,7 +72,7 @@ Requests is ready for today's web.
 - Chunked Requests
 - ``.netrc`` Support
 
-Requests officially supports Python 2.7 & 3.4–3.7, and runs great on PyPy.
+Requests officially supports Python 2.7 & 3.6+, and runs great on PyPy.
 
 
 The User Guide
@@ -81,7 +85,6 @@ instructions for getting the most out of Requests.
 .. toctree::
    :maxdepth: 2
 
-   user/intro
    user/install
    user/quickstart
    user/advanced
@@ -97,14 +100,17 @@ Requests ecosystem and community.
 .. toctree::
    :maxdepth: 2
 
-   community/sponsors
    community/recommended
    community/faq
    community/out-there
    community/support
    community/vulnerabilities
-   community/updates
    community/release-process
+
+.. toctree::
+   :maxdepth: 1
+
+   community/updates
 
 The API Documentation / Guide
 -----------------------------
@@ -128,8 +134,6 @@ you.
    :maxdepth: 3
 
    dev/contributing
-   dev/philosophy
-   dev/todo
    dev/authors
 
 There are no more guides. You are now guideless.

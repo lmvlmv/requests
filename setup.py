@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # Learn more: https://github.com/kennethreitz/setup.py
 import os
-import re
 import sys
 
 from codecs import open
@@ -42,9 +41,11 @@ if sys.argv[-1] == 'publish':
 packages = ['requests']
 
 requires = [
-    'chardet>=3.0.2,<4',
-    'idna>=2.5,<3',
-    'urllib3>=1.21.1,<1.26,!=1.25.0,!=1.25.1',
+    'charset_normalizer~=2.0.0; python_version >= "3"',
+    'chardet>=3.0.2,<5; python_version < "3"',
+    'idna>=2.5,<3; python_version < "3"',
+    'idna>=2.5,<4; python_version >= "3"',
+    'urllib3>=1.21.1,<1.27',
     'certifi>=2017.4.17'
 
 ]
@@ -63,8 +64,6 @@ with open(os.path.join(here, 'requests', '__version__.py'), 'r', 'utf-8') as f:
 
 with open('README.md', 'r', 'utf-8') as f:
     readme = f.read()
-with open('HISTORY.md', 'r', 'utf-8') as f:
-    history = f.read()
 
 setup(
     name=about['__title__'],
@@ -76,10 +75,10 @@ setup(
     author_email=about['__author_email__'],
     url=about['__url__'],
     packages=packages,
-    package_data={'': ['LICENSE', 'NOTICE'], 'requests': ['*.pem']},
+    package_data={'': ['LICENSE', 'NOTICE']},
     package_dir={'requests': 'requests'},
     include_package_data=True,
-    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",
     install_requires=requires,
     license=about['__license__'],
     zip_safe=False,
@@ -92,19 +91,21 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
     cmdclass={'test': PyTest},
     tests_require=test_requirements,
     extras_require={
-        'security': ['pyOpenSSL >= 0.14', 'cryptography>=1.3.4'],
+        'security': [],
         'socks': ['PySocks>=1.5.6, !=1.5.7'],
         'socks:sys_platform == "win32" and python_version == "2.7"': ['win_inet_pton'],
+        'use_chardet_on_py3': ['chardet>=3.0.2,<5']
     },
     project_urls={
         'Documentation': 'https://requests.readthedocs.io',

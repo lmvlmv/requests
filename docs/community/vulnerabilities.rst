@@ -1,8 +1,6 @@
 Vulnerability Disclosure
 ========================
 
-.. image:: https://farm5.staticflickr.com/4211/34709353644_b041e9e1c2_k_d.jpg
-
 If you think you have found a potential security vulnerability in requests,
 please email `Nate <mailto:nate.prewitt@gmail.com>`_ and `Seth <mailto:@sethmichaellarson@gmail.com>`_ directly. **Do not file a public issue.**
 
@@ -74,7 +72,7 @@ time, to ensure that they are able to promptly release their downstream
 packages. Currently the list of people we actively contact *ahead of a public
 release* is:
 
-- Jeremy Cline, Red Hat (@jeremycline)
+- Python Maintenance Team, Red Hat (python-maint@redhat.com)
 - Daniele Tricoli, Debian (@eriol)
 
 We will notify these individuals at least a week ahead of our planned release

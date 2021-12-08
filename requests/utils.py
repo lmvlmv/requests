@@ -20,6 +20,7 @@ import tempfile
 import warnings
 import zipfile
 from collections import OrderedDict
+from urllib3.util import make_headers
 
 from .__version__ import __version__
 from . import certs
@@ -40,6 +41,11 @@ NETRC_FILES = ('.netrc', '_netrc')
 DEFAULT_CA_BUNDLE_PATH = certs.where()
 
 DEFAULT_PORTS = {'http': 80, 'https': 443}
+
+# Ensure that ', ' is used to preserve previous delimiter behavior.
+DEFAULT_ACCEPT_ENCODING = ", ".join(
+    re.split(r",\s*", make_headers(accept_encoding=True)["accept-encoding"])
+)
 
 
 if sys.platform == 'win32':
@@ -118,7 +124,10 @@ def super_len(o):
     elif hasattr(o, 'fileno'):
         try:
             fileno = o.fileno()
-        except io.UnsupportedOperation:
+        except (io.UnsupportedOperation, AttributeError):
+            # AttributeError is a surprising exception, seeing as how we've just checked
+            # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
+            # `Tarfile.extractfile()`, per issue 5229.
             pass
         else:
             total_length = os.fstat(fileno).st_size
@@ -148,7 +157,7 @@ def super_len(o):
                 current_position = total_length
         else:
             if hasattr(o, 'seek') and total_length is None:
-                # StringIO and BytesIO have seek but no useable fileno
+                # StringIO and BytesIO have seek but no usable fileno
                 try:
                     # seek to end of file
                     o.seek(0, 2)
@@ -169,14 +178,20 @@ def super_len(o):
 def get_netrc_auth(url, raise_errors=False):
     """Returns the Requests tuple auth for a given url from netrc."""
 
+    netrc_file = os.environ.get('NETRC')
+    if netrc_file is not None:
+        netrc_locations = (netrc_file,)
+    else:
+        netrc_locations = ('~/{}'.format(f) for f in NETRC_FILES)
+
     try:
         from netrc import netrc, NetrcParseError
 
         netrc_path = None
 
-        for f in NETRC_FILES:
+        for f in netrc_locations:
             try:
-                loc = os.path.expanduser('~/{}'.format(f))
+                loc = os.path.expanduser(f)
             except KeyError:
                 # os.path.expanduser can fail when $HOME is undefined and
                 # getpwuid fails. See https://bugs.python.org/issue20164 &
@@ -212,7 +227,7 @@ def get_netrc_auth(url, raise_errors=False):
             if raise_errors:
                 raise
 
-    # AppEngine hackiness.
+    # App Engine hackiness.
     except (ImportError, AttributeError):
         pass
 
@@ -239,6 +254,10 @@ def extract_zipped_paths(path):
     archive, member = os.path.split(path)
     while archive and not os.path.exists(archive):
         archive, prefix = os.path.split(archive)
+        if not prefix:
+            # If we don't check for an empty prefix after the split (in other words, archive remains unchanged after the split),
+            # we _can_ end up in an infinite loop on a rare corner case affecting a small number of users
+            break
         member = '/'.join([prefix, member])
 
     if not zipfile.is_zipfile(archive):
@@ -250,11 +269,26 @@ def extract_zipped_paths(path):
 
     # we have a valid zip archive and a valid member of that archive
     tmp = tempfile.gettempdir()
-    extracted_path = os.path.join(tmp, *member.split('/'))
+    extracted_path = os.path.join(tmp, member.split('/')[-1])
     if not os.path.exists(extracted_path):
-        extracted_path = zip_file.extract(member, path=tmp)
-
+        # use read + write to avoid the creating nested folders, we only want the file, avoids mkdir racing condition
+        with atomic_open(extracted_path) as file_handler:
+            file_handler.write(zip_file.read(member))
     return extracted_path
+
+
+@contextlib.contextmanager
+def atomic_open(filename):
+    """Write a file to the disk in an atomic fashion"""
+    replacer = os.rename if sys.version_info[0] == 2 else os.replace
+    tmp_descriptor, tmp_name = tempfile.mkstemp(dir=os.path.dirname(filename))
+    try:
+        with os.fdopen(tmp_descriptor, 'wb') as tmp_handler:
+            yield tmp_handler
+        replacer(tmp_name, filename)
+    except BaseException:
+        os.remove(tmp_name)
+        raise
 
 
 def from_key_val_list(value):
@@ -496,6 +530,10 @@ def get_encoding_from_headers(headers):
 
     if 'text' in content_type:
         return 'ISO-8859-1'
+
+    if 'application/json' in content_type:
+        # Assume UTF-8 based on RFC 4627: https://www.ietf.org/rfc/rfc4627.txt since the charset was unset
+        return 'utf-8'
 
 
 def stream_decode_response_unicode(iterator, r):
@@ -795,6 +833,34 @@ def select_proxy(url, proxies):
     return proxy
 
 
+def resolve_proxies(request, proxies, trust_env=True):
+    """This method takes proxy information from a request and configuration
+    input to resolve a mapping of target proxies. This will consider settings
+    such a NO_PROXY to strip proxy configurations.
+
+    :param request: Request or PreparedRequest
+    :param proxies: A dictionary of schemes or schemes and hosts to proxy URLs
+    :param trust_env: Boolean declaring whether to trust environment configs
+
+    :rtype: dict
+    """
+    proxies = proxies if proxies is not None else {}
+    url = request.url
+    scheme = urlparse(url).scheme
+    no_proxy = proxies.get('no_proxy')
+    new_proxies = proxies.copy()
+
+    bypass_proxy = should_bypass_proxies(url, no_proxy=no_proxy)
+    if trust_env and not bypass_proxy:
+        environ_proxies = get_environ_proxies(url, no_proxy=no_proxy)
+
+        proxy = environ_proxies.get(scheme, environ_proxies.get('all'))
+
+        if proxy:
+            new_proxies.setdefault(scheme, proxy)
+    return new_proxies
+
+
 def default_user_agent(name="python-requests"):
     """
     Return a string representing the default user agent.
@@ -810,7 +876,7 @@ def default_headers():
     """
     return CaseInsensitiveDict({
         'User-Agent': default_user_agent(),
-        'Accept-Encoding': ', '.join(('gzip', 'deflate')),
+        'Accept-Encoding': DEFAULT_ACCEPT_ENCODING,
         'Accept': '*/*',
         'Connection': 'keep-alive',
     })

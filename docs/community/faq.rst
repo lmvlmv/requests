@@ -3,8 +3,6 @@
 Frequently Asked Questions
 ==========================
 
-.. image:: https://farm5.staticflickr.com/4290/35294660055_42c02b2316_k_d.jpg
-
 This part of the documentation answers common questions about Requests.
 
 Encoded Data?
@@ -12,6 +10,9 @@ Encoded Data?
 
 Requests automatically decompresses gzip-encoded responses, and does
 its best to decode response content to unicode when possible.
+
+When either the `brotli <https://pypi.org/project/Brotli/>`_ or `brotlicffi <https://pypi.org/project/brotlicffi/>`_
+package is installed, requests also decodes Brotli-encoded responses.
 
 You can get direct access to the raw response (and even the socket),
 if needed as well.
@@ -54,19 +55,17 @@ Chris Adams gave an excellent summary on
 Python 3 Support?
 -----------------
 
-Yes! Requests officially supports Python 2.7 & 3.5+ and PyPy.
+Yes! Requests officially supports Python 2.7 & 3.6+ and PyPy.
 
 Python 2 Support?
 -----------------
 
 Yes! We do not have immediate plans to `sunset
 <https://www.python.org/doc/sunset-python-2/>`_ our support for Python
-2.7. We understand that we have a large user base with varying needs,
-and intend to maintain Python 2.7 support within Requests until `pip
-stops supporting Python 2.7 (there's no estimated date on that yet)
-<https://pip.pypa.io/en/latest/development/release-process/#python-2-support>`_.
+2.7. We understand that we have a large user base with varying needs.
 
-That said, it is *highly* recommended users migrate to Python 3.5+ since Python 2.7 will no longer be receiving bug fixes or security updates after January 1, 2020.
+That said, it is *highly* recommended users migrate to Python 3.6+ since Python
+2.7 is no longer receiving bug fixes or security updates as of January 1, 2020.
 
 What are "hostname doesn't match" errors?
 -----------------------------------------
